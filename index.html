@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Retro Riddle Quest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background-image: url('https://www.everwallpaper.co.uk/cdn/shop/products/11golden-autumn-in-forest-mural-wallpaper-plain.jpg?v=1739777227');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      font-family: 'Courier New', Courier, monospace;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .riddle-container {
+      margin-top: 50px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .riddle-img {
+      width: 128px;
+      height: 128px;
+      image-rendering: pixelated;
+      margin: 20px auto;
+      display: block;
+    }
+
+    input[type="text"] {
+      font-family: 'Courier New', Courier, monospace;
+      padding: 10px;
+      font-size: 18px;
+      width: 60%;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-family: 'Courier New';
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .theme-label {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #ffd700;
+    }
+
+    .mechanics {
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+
+    .corner-help {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.75);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 999;
+      font-size: 14px;
+    }
+
+    .corner-help button {
+      display: block;
+      margin-bottom: 5px;
+      width: 100px;
+      background-color: #222;
+      color: #ffd700;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .hint-text {
+      margin-top: 5px;
+      color: #ffdead;
+      font-style: italic;
+      display: none;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="start-screen" class="riddle-container">
+    <h2>Click to start your Riddle Game</h2>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <!-- Game Content -->
+  <div id="game-content" class="hidden">
+    <h1 id="page-title">🔮 Truth Quest 🔮</h1>
+
+    <div id="riddle-section" class="riddle-container">
+      <img id="riddle-img" class="riddle-img" src="" alt="Riddle Image" />
+      <div id="riddle-theme" class="theme-label"></div>
+      <div id="riddle-mechanics" class="mechanics"></div>
+      <p id="riddle-text">Loading...</p>
+
+      <div id="answer-block">
+        <input type="text" id="riddle-answer" placeholder="Type your answer..." />
+        <br />
+        <button onclick="submitAnswer()" id="submit-button">Submit</button>
+      </div>
+
+      <div id="next-block" class="hidden">
+        <button onclick="goToNextRiddle()" id="next-button">Next</button>
+      </div>
+    </div>
+
+    <div id="final-message" class="hidden riddle-container">
+      <h2 id="final-title">🎉 Congratulations, Riddle Master! 🎉</h2>
+      <p id="final-text">You've solved all riddles.</p>
+    </div>
+
+    <div class="corner-help">
+      <button onclick="toggleHint('hint1')">Hint 1</button>
+      <div id="hint1" class="hint-text">Loading...</div>
+
+      <button onclick="toggleHint('hint2')">Hint 2</button>
+      <div id="hint2" class="hint-text">Loading...</div>
+
+      <button onclick="toggleHint('answer')">Answer</button>
+      <div id="answer" class="hint-text">Loading...</div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+
+const riddles = [
+  {
+    pageTitle: "Turtle Trail",
+    text: "I carry my home where'er I go,\nSlow and steady is my flow.\nIn races I may seem quite small,\nBut patience helps me win them all.\nWhat am I?",
+    answer: "Turtle",
+    theme: "Wisdom, Slowness, Endurance",
+    mechanics: "Scroll of Patience",
+    image: "https://theseeddetective.co.uk/wp-content/uploads/2016/05/IMG_2960-scaled.jpg",
+    sound: "audio_fun/FoamRubber-320bit(chosic.com).mp3",
+    hint1: "I'm known for being slow but steady.",
+    hint2: "I live inside a shell I never leave.",
+    revealAnswer: "Turtle"
+  },
+  {
+    pageTitle: "Whisper of the Deep",
+    text: "I stretch far wide, and yet I sleep,\nA world of blue, so vast and deep.\nI touch all lands, yet I belong to none,\nReflecting stars, moon, and sun.\nWhat am I?",
+    answer: "Sea",
+    theme: "Nature, Depth, Vastness",
+    mechanics: "Scroll of Reflection",
+    image: "https://i.pinimg.com/736x/ac/90/5d/ac905deae64c1779dc7d573d383e4f13.jpg",
+    sound: "audio_fun/PeriTune_Alleyway-chosic.com_.mp3",
+    hint1: "I'm salty and deep, filled with waves.",
+    hint2: "Sailors cross me; I'm not a lake or river.",
+    revealAnswer: "Sea"
+  },
+  {
+    pageTitle: "Hollow Heart",
+    text: "I walk and talk but feel no pain,\nThrough Oz I go with no heart to gain.\nA metal man with joints that squeak,\nIt’s love and warmth I truly seek.\nWho am I?",
+    answer: "Tin Man",
+    theme: "Emotion, Loss, Fairy Tale",
+    mechanics: "Scroll of Hollow Echoes",
+    image: "https://dailyanimeart.com/wp-content/uploads/2014/08/obitos-empty-heart1.jpg",
+    sound: "audio_fun/Pixel-Peeker-Polka-faster(chosic.com).mp3",
+    hint1: "I’m from the land of Oz, but missing something inside.",
+    hint2: "I’m made of metal and long for a heart.",
+    revealAnswer: "Tin Man"
+  },
+  {
+    pageTitle: "Wall of Silence",
+    text: "In chats or feeds, I halt the stream,\nI end the noise, erase the theme.\nA digital wall to cut the tie,\nWhat word stops contact—no reply?",
+    answer: "Blocking",
+    theme: "BBBB",
+    mechanics: "Scroll of Stoppage",
+    image: "https://img.freepik.com/free-photo/illustration-anime-character-rain_23-2151394665.jpg?semt=ais_hybrid&w=740&q=80",
+    sound: "audio_fun/Sneaky-Adventure(chosic.com).mp3",
+    hint1: "No more message, no more contact",
+    hint2: "Default PDP",
+    revealAnswer: "Blocking"
+  }
+,
+  {
+    pageTitle: "Noodles of the World",
+    text: "I’m long and thin and often twirled,\nWith sauce and meatballs, I’m loved worldwide.\nAn Italian dish, I’m served with glee—\nWhat kind of pasta could I be?",
+    answer: "Spaghetti",
+    theme: "Food, Culture",
+    mechanics: "Scroll of Savory Strings",
+    image: "https://www.shutterstock.com/image-vector/italy-doodles-collection-prints-cards-260nw-2584885101.jpg",
+    sound: "audio_fun/Swing-Machine-chosic.com_.mp3",
+    hint1: "Often served with tomato sauce and meatballs.",
+    hint2: "It's a long, thin pasta you twirl on your fork.",
+    revealAnswer: "Spaghetti"
+  },
+  {
+    pageTitle: "",
+    text: `I've been thinking about our discussion and I wanted to take a moment to better understand and clarify a few things. From what I’ve understood your mother’s current situation is quite complicated and understandably requires your presence and support. 
+I see a few elements that, if they change, could open up the possibility for a different solution:
+
+1. Your mother’s health improving over the next few years, to the point where she is stable enough for you to feel comfortable living elsewhere.
+
+2. Finding a way to support her that doesn’t rely on your constant weekly presence perhaps by setting up regular visits every few months to coordinate care, update contacts, and check in. We could also consider hiring an assistant to help her with daily tasks like cleaning and errands.
+
+I hope this doesn't come across as insensitive  my intention is only to explore potential solutions together.
+I want to be open with you. I have genuine interest in you and I’d like to know if we’re on the same page about getting to know each other with the intention of eventually  marriage.
+
+If things are still uncertain or if this situation is likely to remain a major obstacle I think it's only fair to talk about it now. I truly care about achieving the possibilities and potentials of things and my interest hasn’t faded after our conversations I want to be clear on this point. It would be sad if things didn’t work out  but at the same time, I’d rather be honest now than risk hurting either of us down the line.
+I'm genuinely ready to explore the possibilities with you and also would like to hear from your perspective what solutions are possible.I want to hear your thoughts on the topic and see if we could figure something out 
+I hope I was able to convey what I think and feel and that you share the same interest as me and the desire to make things work out.
+PS: Ch9awlek fi dramatic Effects haha`,
+ 
+    answer: "",
+    theme: "Future, Possibilities",
+    mechanics: "",
+    image: "https://png.pngtree.com/thumb_back/fh260/background/20240419/pngtree-sunset-dawn-in-morning-warm-light-in-sky-heavenly-landscape-in-image_15664469.jpg",
+    sound: "audio_fun/Abandoned-Dramatic-Melancholic-Music-chosic.com_.mp3",
+    hint1: "",
+    hint2: "",
+    revealAnswer: ""
+  }
+
+
+];
+
+let currentRiddle = 0;
+    let audio = new Audio();
+
+    function startGame() {
+      document.getElementById("start-screen").classList.add("hidden");
+      document.getElementById("game-content").classList.remove("hidden");
+      loadRiddle(currentRiddle);
+    }
+
+    function loadRiddle(index) {
+      const r = riddles[index];
+      document.getElementById("page-title").innerText = r.pageTitle;
+      document.getElementById("riddle-text").innerText = r.text;
+      document.getElementById("riddle-theme").innerText = `Theme: ${r.theme}`;
+      document.getElementById("riddle-mechanics").innerText = r.mechanics;
+      document.getElementById("riddle-img").src = r.image;
+      document.getElementById("riddle-answer").value = "";
+
+      document.getElementById("hint1").innerText = r.hint1 || "No hint provided.";
+      document.getElementById("hint2").innerText = r.hint2 || "No hint provided.";
+      document.getElementById("answer").innerText = r.revealAnswer || "No answer provided.";
+
+      document.getElementById("hint1").style.display = 'none';
+      document.getElementById("hint2").style.display = 'none';
+      document.getElementById("answer").style.display = 'none';
+
+      if (currentRiddle >= 5 && currentRiddle < riddles.length - 1) {
+        document.getElementById("answer-block").classList.add("hidden");
+        document.getElementById("next-block").classList.remove("hidden");
+      } else if (currentRiddle === riddles.length - 1) {
+        // Final riddle - hide all buttons
+        document.getElementById("answer-block").classList.add("hidden");
+        document.getElementById("next-block").classList.add("hidden");
+      } else {
+        document.getElementById("answer-block").classList.remove("hidden");
+        document.getElementById("next-block").classList.add("hidden");
+      }
+
+      playSound(r.sound);
+    }
+
+    function playSound(src) {
+      audio.pause();
+      audio = new Audio(src);
+      audio.play().catch(err => {
+        console.warn("Autoplay prevented:", err.message);
+      });
+    }
+
+    function submitAnswer() {
+      const userAnswer = document.getElementById("riddle-answer").value.trim().toLowerCase();
+      if (userAnswer === riddles[currentRiddle].answer.toLowerCase()) {
+        currentRiddle++;
+        if (currentRiddle >= riddles.length) {
+          document.getElementById("riddle-section").classList.add("hidden");
+          document.getElementById("final-message").classList.remove("hidden");
+          const r = riddles[riddles.length - 1];
+          document.getElementById("final-title").innerText = r.pageTitle;
+          document.getElementById("final-text").innerText = r.text;
+          playSound(r.sound);
+        } else {
+          loadRiddle(currentRiddle);
+        }
+      } else {
+        alert("Incorrect! Try again.");
+      }
+    }
+
+    function goToNextRiddle() {
+      currentRiddle++;
+      if (currentRiddle >= riddles.length) return;
+      loadRiddle(currentRiddle);
+    }
+
+    function toggleHint(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
